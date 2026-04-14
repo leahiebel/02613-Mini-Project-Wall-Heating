@@ -41,8 +41,10 @@ TODO.md
 CHANGELOG.md
 copilot-instructions.md
 
-# Simulation outputs and large arrays (keep curated outputs in dedicated tracked paths if needed)
-outputs/
+# Simulation outputs and large arrays
+outputs/*
+!outputs/.gitkeep
 results/
-job_outputs/
+job_outputs/*
+!job_outputs/.gitkeep
 *.npz
