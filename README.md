@@ -10,6 +10,16 @@ The project-wide source of truth for coding practices, workflow standards, and r
 
 When there is ambiguity, follow `copilot-instructions.md` first.
 
+## Documentation precedence
+
+Use repository documentation in this order:
+
+1. `copilot-instructions.md` (coding standards, workflows, conventions)
+3. `Description/tasks.md` (assignment deliverables)
+4. `Description/project.md` (domain and model background)
+
+If guidance conflicts, treat `copilot-instructions.md` as authoritative.
+
 ## Current structure
 
 - `copilot-instructions.md` — canonical project practices and conventions

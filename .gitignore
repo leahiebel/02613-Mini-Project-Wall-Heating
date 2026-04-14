@@ -44,4 +44,5 @@ copilot-instructions.md
 # Simulation outputs and large arrays (keep curated outputs in dedicated tracked paths if needed)
 outputs/
 results/
+job_outputs/
 *.npz
