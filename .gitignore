@@ -1,0 +1,47 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Build and packaging
+build/
+dist/
+*.egg-info/
+
+# Coverage and test artifacts
+.coverage
+.coverage.*
+htmlcov/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+
+# VS Code workspace-local settings
+.vscode/
+
+# custom files to ignore
+TODO.md
+CHANGELOG.md
+copilot-instructions.md
+
+# Simulation outputs and large arrays (keep curated outputs in dedicated tracked paths if needed)
+outputs/
+results/
+*.npz

@@ -1,5 +1,7 @@
 # Wall Heating Project Background
 
+> Canonical project practices and conventions are defined in `../copilot-instructions.md`.
+
 ## Overview
 
 This project evaluates a fictional experimental building heating concept called **Wall Heating**. Instead of using conventional radiators or floor heating, the idea is to place heating elements inside the **interior walls** of a building so that the walls themselves radiate heat into the rooms. To avoid structural issues, **load-bearing walls are left unheated** and therefore remain cold.
