@@ -97,6 +97,64 @@ These quantities are used to judge whether wall heating is a viable heating stra
 
 The main reference implementation is [src/simulate.py](src/simulate.py). It loads the floorplans, runs the Jacobi solver, and prints CSV-formatted summary statistics.
 
+## Visualize input floorplans
+
+Use [scripts/visualize_inputs.py](scripts/visualize_inputs.py) to inspect the raw inputs for selected buildings. The script saves PNG images with three panels per building:
+
+- domain values
+- interior mask
+- type map (outside/cold wall/warm wall/interior)
+
+Generate images for the first 3 building IDs:
+
+```bash
+python scripts/visualize_inputs.py --num 3
+```
+
+Generate images for specific IDs:
+
+```bash
+python scripts/visualize_inputs.py --ids 00001 00042 01000
+```
+
+Use a custom data location or output folder:
+
+```bash
+python scripts/visualize_inputs.py \
+	--data-dir /dtu/projects/02613_2025/data/modified_swiss_dwellings \
+	--out-dir outputs/input_viz
+```
+
+Images are written to `outputs/input_viz/` by default.
+
+## Visualize simulation results
+
+Use [scripts/visualize_simulation_results.py](scripts/visualize_simulation_results.py) to run the reference Jacobi solver and save steady-state temperature maps.
+
+Generate result images for 2 floorplans (good starting point for task 3):
+
+```bash
+python scripts/visualize_simulation_results.py --num 2
+```
+
+Generate result images for specific IDs:
+
+```bash
+python scripts/visualize_simulation_results.py --ids 10000 10009
+```
+
+Control solver settings and output location:
+
+```bash
+python scripts/visualize_simulation_results.py \
+	--num 2 \
+	--max-iter 20000 \
+	--atol 1e-4 \
+	--out-dir outputs/simulation_viz
+```
+
+Images are written to `outputs/simulation_viz/` by default.
+
 ### CPU batch run
 
 Submit the CPU job from the project root:
