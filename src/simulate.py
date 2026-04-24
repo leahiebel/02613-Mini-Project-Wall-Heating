@@ -10,10 +10,8 @@ def load_data(load_dir, bid):
     interior_mask = np.load(join(load_dir, f"{bid}_interior.npy"))
     return u, interior_mask
 
-
 def jacobi(u, interior_mask, max_iter, atol=1e-6):
     u = np.copy(u)
-
     for i in range(max_iter):
         # Compute average of left, right, up and down neighbors, see eq. (1)
         u_new = 0.25 * (
@@ -22,11 +20,9 @@ def jacobi(u, interior_mask, max_iter, atol=1e-6):
         u_new_interior = u_new[interior_mask]
         delta = np.abs(u[1:-1, 1:-1][interior_mask] - u_new_interior).max()
         u[1:-1, 1:-1][interior_mask] = u_new_interior
-
         if delta < atol:
             break
     return u
-
 
 def summary_stats(u, interior_mask):
     u_interior = u[1:-1, 1:-1][interior_mask]
@@ -41,7 +37,6 @@ def summary_stats(u, interior_mask):
         "pct_below_15": pct_below_15,
     }
 
-
 if __name__ == "__main__":
     # Load data
     LOAD_DIR = "/dtu/projects/02613_2025/data/modified_swiss_dwellings/"
@@ -54,16 +49,12 @@ if __name__ == "__main__":
         N = int(sys.argv[1])
 
     building_ids = building_ids[:N]
-
-    # Load floor plans
     all_u0 = np.empty((N, 514, 514))
     all_interior_mask = np.empty((N, 512, 512), dtype="bool")
     for i, bid in enumerate(building_ids):
         u0, interior_mask = load_data(LOAD_DIR, bid)
         all_u0[i] = u0
         all_interior_mask[i] = interior_mask
-
-    # Run jacobi iterations for each floor plan
     MAX_ITER = 20_000
     ABS_TOL = 1e-4
 

@@ -155,6 +155,25 @@ python scripts/visualize_simulation_results.py \
 
 Images are written to `outputs/simulation_viz/` by default.
 
+## Standardized profiling subset
+
+Use the profiling job when you want to compare solver implementations under the same
+conditions on the cluster.
+
+- Fixed profiling IDs are stored in `description/profile_subset_ids.txt`.
+- The subset contains 20 buildings and is used for every profiling run.
+- The profiling job accepts any solver module/function pair that follows the Jacobi
+	signature used by the reference implementation.
+
+Submit the profiling job with optional overrides for the solver file and function name:
+
+```bash
+bsub < scripts/CPU_profile_job.sh
+bsub < scripts/CPU_profile_job.sh src/simulate_numba_cpu.py jacobi
+```
+
+This writes the raw `.lprof` file and a readable `.txt` report into `outputs/profiling/`.
+
 ### CPU batch run
 
 Submit the CPU job from the project root:
