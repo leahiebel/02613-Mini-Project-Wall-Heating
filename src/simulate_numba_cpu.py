@@ -1,6 +1,7 @@
 from os.path import join
 import sys
 import numpy as np
+from numba import jit
 
 
 def load_data(load_dir, bid):
@@ -10,7 +11,7 @@ def load_data(load_dir, bid):
     interior_mask = np.load(join(load_dir, f"{bid}_interior.npy"))
     return u, interior_mask
 
-
+@jit(nopython=True)
 def jacobi(u, interior_mask, max_iter, atol=1e-6):
     u = np.copy(u)
 
