@@ -18,18 +18,14 @@ def jacobi_kernel(u, u_new, interior_mask):
 
     ny, nx = u.shape
 
-    if 1 <= i < ny-1 and 1 <= j < nx-1:
-        if interior_mask[i-1, j-1]:
-            u_new[i, j] = 0.25 * (
-                u[i, j-1] + u[i, j+1] +
-                u[i-1, j] + u[i+1, j]
-            )
+    if 1 <= i < ny - 1 and 1 <= j < nx - 1:
+        if interior_mask[i - 1, j - 1]:
+            u_new[i, j] = 0.25 * (u[i, j - 1] + u[i, j + 1] + u[i - 1, j] + u[i + 1, j])
         else:
             u_new[i, j] = u[i, j]
 
 
-
-def jacobi(u0, interior_mask, max_iter):
+def jacobi(u0, interior_mask, max_iter, atol=None):
     u = u0.copy()
     u_new = u0.copy()
 
@@ -52,6 +48,7 @@ def jacobi(u0, interior_mask, max_iter):
 
     return d_u.copy_to_host()
 
+
 def summary_stats(u, interior_mask):
     u_interior = u[1:-1, 1:-1][interior_mask]
     mean_temp = u_interior.mean()
@@ -64,6 +61,7 @@ def summary_stats(u, interior_mask):
         "pct_above_18": pct_above_18,
         "pct_below_15": pct_below_15,
     }
+
 
 if __name__ == "__main__":
     # Load data
@@ -84,7 +82,7 @@ if __name__ == "__main__":
         all_u0[i] = u0
         all_interior_mask[i] = interior_mask
     MAX_ITER = 20_000
-    ABS_TOL = 1e-4
+    # ABS_TOL = 1e-4
 
     all_u = np.empty_like(all_u0)
     for i, (u0, interior_mask) in enumerate(zip(all_u0, all_interior_mask)):
