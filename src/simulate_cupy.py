@@ -1,5 +1,6 @@
 from os.path import join
 import sys
+import time
 import numpy as np
 import cupy as cp
 
@@ -71,10 +72,20 @@ if __name__ == "__main__":
     MAX_ITER = 20_000
     ABS_TOL = 1e-4
 
+    start_time = time.perf_counter()
+
     all_u = np.empty_like(all_u0)
     for i, (u0, interior_mask) in enumerate(zip(all_u0, all_interior_mask)):
         u = jacobi(u0, interior_mask, MAX_ITER, ABS_TOL)
         all_u[i] = u
+
+    end_time = time.perf_counter()
+
+    total_sim_time = end_time - start_time
+    print(
+        f"\n[TIMING] Total simulation time for {N} floorplans: {total_sim_time:.4f} seconds"
+    )
+    print(f"[TIMING] Average time per floorplan: {total_sim_time / N:.4f} seconds\n")
 
     # Print summary statistics in CSV format
     stat_keys = ["mean_temp", "std_temp", "pct_above_18", "pct_below_15"]
