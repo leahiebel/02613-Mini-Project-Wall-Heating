@@ -1,5 +1,5 @@
 #!/bin/bash
-#BSUB -J CuPy
+#BSUB -J CuPy_opti
 #BSUB -q c02613
 #BSUB -W 15
 #BSUB -n 4
@@ -7,8 +7,8 @@
 #BSUB -R "rusage[mem=12GB]"
 #BSUB -gpu "num=1:mode=exclusive_process"
 #BSUB -R "select[gpu80gb]"
-#BSUB -o job_outputs/CuPy_%J.out
-#BSUB -e job_outputs/CuPy_%J.err
+#BSUB -o job_outputs/CuPy_opti_%J.out
+#BSUB -e job_outputs/CuPy_opti_%J.err
 
 source /dtu/projects/02613_2025/conda/conda_init.sh
 conda activate 02613_2026
