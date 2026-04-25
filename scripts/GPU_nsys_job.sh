@@ -14,7 +14,7 @@ source /dtu/projects/02613_2025/conda/conda_init.sh
 conda activate 02613_2026
 
 DATA_DIR="/dtu/projects/02613_2025/data/modified_swiss_dwellings/"
-N_FLOORPLANS=2 # Keep it small for profiling
+N_FLOORPLANS=200 # increase for more representative profiling, sync operations will be more visible
 PROFILE_OUTPUT_DIR="outputs/profiles"
 mkdir -p "$PROFILE_OUTPUT_DIR"
 
