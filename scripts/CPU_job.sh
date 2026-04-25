@@ -16,7 +16,7 @@ CSV_OUTPUT_DIR="outputs"
 N_FLOORPLANS=5
 
 # Can override this with args when submitting job, just example:
-CANDIDATE_MODULE="${1:-src/simulate_numba_cpu.py}"
+CANDIDATE_MODULE="${1:-src/simulate_numba_cpu_parallel.py}"
 CANDIDATE_SOLVER="${2:-jacobi}"
 
 python scripts/validate_against_reference.py \
