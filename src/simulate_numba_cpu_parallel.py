@@ -13,7 +13,7 @@ def load_data(load_dir, bid):
 
 
 @jit(nopython=True, parallel=True)
-def jacobi_parallel(u, interior_mask, max_iter, atol=1e-6):
+def jacobi(u, interior_mask, max_iter, atol=1e-6):
     ny, nx = u.shape
     u_new = u.copy()
 
