@@ -15,15 +15,14 @@ def load_data(load_dir, bid):
 @jit(nopython=True, parallel=True)
 def jacobi(u, interior_mask, max_iter, atol=1e-6):
     ny, nx = u.shape
-
     u_new = u.copy()
 
     for it in range(max_iter):
 
         delta = 0.0
 
-        # update
         for i in prange(1, ny - 1):
+            local_delta = 0.0
             for j in range(1, nx - 1):
 
                 if interior_mask[i - 1, j - 1]:
@@ -34,12 +33,15 @@ def jacobi(u, interior_mask, max_iter, atol=1e-6):
                     u_new[i, j] = val
 
                     d = abs(val - u[i, j])
-                    if d > delta:
-                        delta = d
+                    if d > local_delta:
+                        local_delta = d
                 else:
                     u_new[i, j] = u[i, j]
 
-        u[:] = u_new[:]
+            if local_delta > delta:
+                delta = local_delta
+
+        u[:] = u_new
 
         if delta < atol:
             break
