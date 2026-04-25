@@ -39,5 +39,6 @@ fi
 
 echo "Validation passed. Running GPU simulation..."
 
+MODULE_NAME=$(basename "$CANDIDATE_MODULE" .py)
 python "$CANDIDATE_MODULE" "$N_FLOORPLANS" "$DATA_DIR" \
-  > "$CSV_OUTPUT_DIR/gpu_results_${N_FLOORPLANS}.csv"
+  > "$CSV_OUTPUT_DIR/gpu_results_${MODULE_NAME}_${N_FLOORPLANS}.csv"
