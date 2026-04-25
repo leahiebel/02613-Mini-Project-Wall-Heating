@@ -1,7 +1,7 @@
 from os.path import join
 import sys
 import numpy as np
-from numba import jit
+from numba import jit, prange
 
 
 def load_data(load_dir, bid):
@@ -12,33 +12,36 @@ def load_data(load_dir, bid):
     return u, interior_mask
 
 
-@jit(nopython=True)
+@jit(nopython=True, parallel=True)
 def jacobi(u, interior_mask, max_iter, atol=1e-6):
-    u = u.copy()
     ny, nx = u.shape
-
-    u_new = np.zeros_like(u)
+    u_new = u.copy()
 
     for it in range(max_iter):
+
         delta = 0.0
 
-        for i in range(1, ny - 1):
+        for i in prange(1, ny - 1):
+            local_delta = 0.0
             for j in range(1, nx - 1):
+
                 if interior_mask[i - 1, j - 1]:
-                    u_new[i, j] = 0.25 * (
+                    val = 0.25 * (
                         u[i, j - 1] + u[i, j + 1] +
                         u[i - 1, j] + u[i + 1, j]
                     )
+                    u_new[i, j] = val
+
+                    d = abs(val - u[i, j])
+                    if d > local_delta:
+                        local_delta = d
                 else:
                     u_new[i, j] = u[i, j]
 
-        for i in range(1, ny - 1):
-            for j in range(1, nx - 1):
-                if interior_mask[i - 1, j - 1]:
-                    diff = abs(u[i, j] - u_new[i, j])
-                    if diff > delta:
-                        delta = diff
-                    u[i, j] = u_new[i, j]
+            if local_delta > delta:
+                delta = local_delta
+
+        u[:] = u_new
 
         if delta < atol:
             break
