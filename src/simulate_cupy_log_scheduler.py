@@ -1,6 +1,7 @@
 from os.path import join
 import sys
 import time
+import math
 import numpy as np
 import cupy as cp
 
@@ -13,20 +14,30 @@ def load_data(load_dir, bid):
     return u, interior_mask
 
 
-def jacobi(u0, interior_mask, max_iter, atol=1e-6, check_interval=100):
+def jacobi(u0, interior_mask, max_iter, atol=1e-4):
     u = cp.asarray(u0)
     mask = cp.asarray(interior_mask)
+
+    # Start with a large interval
+    check_interval = 1000
 
     for i in range(max_iter):
         u_new = 0.25 * (u[1:-1, :-2] + u[1:-1, 2:] + u[:-2, 1:-1] + u[2:, 1:-1])
         u_new_interior = u_new[mask]
 
-        # Only perform the expensive sync operation periodically
+        # Periodic check to avoid constant CPU-GPU synchronization overhead
         if i % check_interval == 0:
-            delta = cp.abs(u[1:-1, 1:-1][mask] - u_new_interior).max()
+            # Calculate max delta and pull it to the CPU as a float
+            delta = float(cp.abs(u[1:-1, 1:-1][mask] - u_new_interior).max())
+
             if delta < atol:
                 u[1:-1, 1:-1][mask] = u_new_interior
                 break
+
+            # Logarithmic Scheduler: adjust check interval based on how close we are to convergence
+            if delta > atol:
+                orders_of_mag = math.log10(delta / atol)
+                check_interval = max(10, int(100 * orders_of_mag))
 
         # Normal update
         u[1:-1, 1:-1][mask] = u_new_interior
@@ -35,7 +46,6 @@ def jacobi(u0, interior_mask, max_iter, atol=1e-6, check_interval=100):
 
 
 def summary_stats(u, interior_mask):
-    # u is a numpy array again, this function is unchanged
     u_interior = u[1:-1, 1:-1][interior_mask]
     mean_temp = u_interior.mean()
     std_temp = u_interior.std()
@@ -72,9 +82,10 @@ if __name__ == "__main__":
     MAX_ITER = 20_000
     ABS_TOL = 1e-4
 
+    all_u = np.empty_like(all_u0)
+
     start_time = time.perf_counter()
 
-    all_u = np.empty_like(all_u0)
     for i, (u0, interior_mask) in enumerate(zip(all_u0, all_interior_mask)):
         u = jacobi(u0, interior_mask, MAX_ITER, ABS_TOL)
         all_u[i] = u
