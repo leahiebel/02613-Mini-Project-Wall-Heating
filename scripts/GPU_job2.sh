@@ -27,7 +27,8 @@ python scripts/validate_against_reference.py \
   --candidate-module "$CANDIDATE_MODULE" \
   --candidate-solver "$CANDIDATE_SOLVER" \
   --max-iter 20000 \
-  --atol -1 \# force baseline to compute all iterations for validation to match GPU implementation
+  --atol -1 \
+  # force baseline to compute all iterations for validation to match GPU implementation
 
 VALIDATION_EXIT=$?
 if [ $VALIDATION_EXIT -ne 0 ]; then
