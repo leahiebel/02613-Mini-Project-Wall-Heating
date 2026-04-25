@@ -17,26 +17,33 @@ def jacobi(u, interior_mask, max_iter, atol=1e-6):
     u = u.copy()
     ny, nx = u.shape
 
+    u_new = np.zeros_like(u)
+
     for it in range(max_iter):
         delta = 0.0
 
-        for i in range(1, ny-1):
-            for j in range(1, nx-1):
-                if interior_mask[i-1, j-1]:
-                    new_val = 0.25 * (
-                        u[i, j-1] + u[i, j+1] +
-                        u[i-1, j] + u[i+1, j]
+        for i in range(1, ny - 1):
+            for j in range(1, nx - 1):
+                if interior_mask[i - 1, j - 1]:
+                    u_new[i, j] = 0.25 * (
+                        u[i, j - 1] + u[i, j + 1] +
+                        u[i - 1, j] + u[i + 1, j]
                     )
-                    diff = abs(u[i, j] - new_val)
+                else:
+                    u_new[i, j] = u[i, j]
+
+        for i in range(1, ny - 1):
+            for j in range(1, nx - 1):
+                if interior_mask[i - 1, j - 1]:
+                    diff = abs(u[i, j] - u_new[i, j])
                     if diff > delta:
                         delta = diff
-                    u[i, j] = new_val
+                    u[i, j] = u_new[i, j]
 
         if delta < atol:
             break
 
     return u
-
 
 
 
