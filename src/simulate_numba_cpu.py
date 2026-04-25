@@ -1,6 +1,7 @@
 from os.path import join
 import sys
 import numpy as np
+from numba import jit
 
 
 def load_data(load_dir, bid):
@@ -10,19 +11,34 @@ def load_data(load_dir, bid):
     interior_mask = np.load(join(load_dir, f"{bid}_interior.npy"))
     return u, interior_mask
 
+
+@jit(nopython=True)
 def jacobi(u, interior_mask, max_iter, atol=1e-6):
-    u = np.copy(u)
-    for i in range(max_iter):
-        # Compute average of left, right, up and down neighbors, see eq. (1)
-        u_new = 0.25 * (
-            u[1:-1, :-2] + u[1:-1, 2:] + u[:-2, 1:-1] + u[2:, 1:-1]
-        )
-        u_new_interior = u_new[interior_mask]
-        delta = np.abs(u[1:-1, 1:-1][interior_mask] - u_new_interior).max()
-        u[1:-1, 1:-1][interior_mask] = u_new_interior
+    u = u.copy()
+    ny, nx = u.shape
+
+    for it in range(max_iter):
+        delta = 0.0
+
+        for i in range(1, ny-1):
+            for j in range(1, nx-1):
+                if interior_mask[i-1, j-1]:
+                    new_val = 0.25 * (
+                        u[i, j-1] + u[i, j+1] +
+                        u[i-1, j] + u[i+1, j]
+                    )
+                    diff = abs(u[i, j] - new_val)
+                    if diff > delta:
+                        delta = diff
+                    u[i, j] = new_val
+
         if delta < atol:
             break
+
     return u
+
+
+
 
 def summary_stats(u, interior_mask):
     u_interior = u[1:-1, 1:-1][interior_mask]
@@ -36,6 +52,7 @@ def summary_stats(u, interior_mask):
         "pct_above_18": pct_above_18,
         "pct_below_15": pct_below_15,
     }
+
 
 if __name__ == "__main__":
     # Load data
