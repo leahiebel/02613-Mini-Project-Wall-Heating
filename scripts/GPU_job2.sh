@@ -18,7 +18,7 @@ CSV_OUTPUT_DIR="outputs"
 N_FLOORPLANS=5
 
 # allow overrides
-CANDIDATE_MODULE="${1:-src/simulate.py}"
+CANDIDATE_MODULE="${1:-src/simulate_numba_gpu.py}"
 CANDIDATE_SOLVER="${2:-jacobi}"
 
 echo "Running validation..."
