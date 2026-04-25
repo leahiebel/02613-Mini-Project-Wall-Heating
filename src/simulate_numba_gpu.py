@@ -1,7 +1,7 @@
 from os.path import join
 import sys
 import numpy as np
-from numba import jit
+from numba import cuda
 
 
 def load_data(load_dir, bid):
@@ -12,33 +12,45 @@ def load_data(load_dir, bid):
     return u, interior_mask
 
 
-@jit(nopython=True)
-def jacobi(u, interior_mask, max_iter, atol=1e-6):
-    u = u.copy()
+@cuda.jit
+def jacobi_kernel(u, u_new, interior_mask):
+    i, j = cuda.grid(2)
+
     ny, nx = u.shape
 
-    for it in range(max_iter):
-        delta = 0.0
-
-        for i in range(1, ny-1):
-            for j in range(1, nx-1):
-                if interior_mask[i-1, j-1]:
-                    new_val = 0.25 * (
-                        u[i, j-1] + u[i, j+1] +
-                        u[i-1, j] + u[i+1, j]
-                    )
-                    diff = abs(u[i, j] - new_val)
-                    if diff > delta:
-                        delta = diff
-                    u[i, j] = new_val
-
-        if delta < atol:
-            break
-
-    return u
+    if 1 <= i < ny-1 and 1 <= j < nx-1:
+        if interior_mask[i-1, j-1]:
+            u_new[i, j] = 0.25 * (
+                u[i, j-1] + u[i, j+1] +
+                u[i-1, j] + u[i+1, j]
+            )
+        else:
+            u_new[i, j] = u[i, j]
 
 
 
+def jacobi(u0, interior_mask, max_iter):
+    u = u0.copy()
+    u_new = u0.copy()
+
+    # Transfer to GPU
+    d_u = cuda.to_device(u)
+    d_u_new = cuda.to_device(u_new)
+    d_mask = cuda.to_device(interior_mask)
+
+    # Config GPU
+    threadsperblock = (16, 16)
+    blockspergrid_x = (u.shape[0] + 15) // 16
+    blockspergrid_y = (u.shape[1] + 15) // 16
+    blockspergrid = (blockspergrid_x, blockspergrid_y)
+
+    for _ in range(max_iter):
+        jacobi_kernel[blockspergrid, threadsperblock](d_u, d_u_new, d_mask)
+
+        # swap buffers
+        d_u, d_u_new = d_u_new, d_u
+
+    return d_u.copy_to_host()
 
 def summary_stats(u, interior_mask):
     u_interior = u[1:-1, 1:-1][interior_mask]
@@ -52,7 +64,6 @@ def summary_stats(u, interior_mask):
         "pct_above_18": pct_above_18,
         "pct_below_15": pct_below_15,
     }
-
 
 if __name__ == "__main__":
     # Load data
@@ -77,7 +88,7 @@ if __name__ == "__main__":
 
     all_u = np.empty_like(all_u0)
     for i, (u0, interior_mask) in enumerate(zip(all_u0, all_interior_mask)):
-        u = jacobi(u0, interior_mask, MAX_ITER, ABS_TOL)
+        u = jacobi(u0, interior_mask, MAX_ITER)
         all_u[i] = u
 
     # Print summary statistics in CSV format
