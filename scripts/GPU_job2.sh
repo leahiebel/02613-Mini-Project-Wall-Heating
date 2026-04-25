@@ -7,8 +7,8 @@
 #BSUB -R "rusage[mem=12GB]"
 #BSUB -gpu "num=1:mode=exclusive_process"
 #BSUB -R "select[gpu80gb]"
-#BSUB -o NumbaGPU_%J.out
-#BSUB -e NumbaGPU_%J.err
+#BSUB -o job_outputs/NumbaGPU_%J.out
+#BSUB -e job_outputs/NumbaGPU_%J.err
 
 source /dtu/projects/02613_2025/conda/conda_init.sh
 conda activate 02613_2026

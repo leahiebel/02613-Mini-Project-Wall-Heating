@@ -7,14 +7,19 @@
 #BSUB -R "rusage[mem=12GB]"
 #BSUB -gpu "num=1:mode=exclusive_process"
 #BSUB -R "select[gpu80gb]"
-#BSUB -o nsys_cupy_%J.out
-#BSUB -e nsys_cupy_%J.err
+#BSUB -o job_outputs/nsys_cupy_%J.out
+#BSUB -e job_outputs/nsys_cupy_%J.err
 
 source /dtu/projects/02613_2025/conda/conda_init.sh
 conda activate 02613_2026
 
 DATA_DIR="/dtu/projects/02613_2025/data/modified_swiss_dwellings/"
-N_FLOORPLANS=2 # reduce number of floorplans for profiling to keep runtime fast
+N_FLOORPLANS=2 # Keep it small for profiling
+PROFILE_OUTPUT_DIR="outputs/profiles"
+mkdir -p "$PROFILE_OUTPUT_DIR"
 
-nsys profile --stats=true -o cupy_profile --force-overwrite true \
+nsys profile \
+    --stats=true \
+    --force-overwrite true \
+    -o "$PROFILE_OUTPUT_DIR/cupy_profile_${N_FLOORPLANS}" \
     python src/simulate_cupy.py "$N_FLOORPLANS" "$DATA_DIR"
