@@ -127,9 +127,13 @@ if __name__ == "__main__":
 
     total_sim_time = end_time - start_time
     print(
-        f"\n[TIMING] Task 11 (Dirty Flag) simulation time for {N} floorplans: {total_sim_time:.4f} seconds"
+        f"\n[TIMING] Task 11 (Dirty Flag) simulation time for {N} floorplans: {total_sim_time:.4f} seconds",
+        file=sys.stderr,
     )
-    print(f"[TIMING] Average time per floorplan: {total_sim_time / N:.4f} seconds\n")
+    print(
+        f"[TIMING] Average time per floorplan: {total_sim_time / N:.4f} seconds\n",
+        file=sys.stderr,
+    )
 
     # Print summary statistics in CSV format
     stat_keys = ["mean_temp", "std_temp", "pct_above_18", "pct_below_15"]
