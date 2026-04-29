@@ -1,5 +1,5 @@
 #!/bin/bash
-#BSUB -J python_gpu
+#BSUB -J NumbaGPU
 #BSUB -q c02613
 #BSUB -W 15
 #BSUB -n 4
@@ -7,8 +7,8 @@
 #BSUB -R "rusage[mem=12GB]"
 #BSUB -gpu "num=1:mode=exclusive_process"
 #BSUB -R "select[gpu80gb]"
-#BSUB -o job_outputs/%J.out
-#BSUB -e job_outputs/%J.err
+#BSUB -o job_outputs/NumbaGPU_%J.out
+#BSUB -e job_outputs/NumbaGPU_%J.err
 
 source /dtu/projects/02613_2025/conda/conda_init.sh
 conda activate 02613_2026
@@ -27,7 +27,8 @@ python scripts/validate_against_reference.py \
   --candidate-module "$CANDIDATE_MODULE" \
   --candidate-solver "$CANDIDATE_SOLVER" \
   --max-iter 20000 \
-  --atol 1e-4
+  --atol -1 \
+  # force baseline to compute all iterations for validation to match GPU implementation
 
 VALIDATION_EXIT=$?
 if [ $VALIDATION_EXIT -ne 0 ]; then
@@ -38,5 +39,6 @@ fi
 
 echo "Validation passed. Running GPU simulation..."
 
+MODULE_NAME=$(basename "$CANDIDATE_MODULE" .py)
 python "$CANDIDATE_MODULE" "$N_FLOORPLANS" "$DATA_DIR" \
-  > "$CSV_OUTPUT_DIR/gpu_results_${N_FLOORPLANS}.csv"
+  > "$CSV_OUTPUT_DIR/gpu_results_${MODULE_NAME}_${N_FLOORPLANS}.csv"

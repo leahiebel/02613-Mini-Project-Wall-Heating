@@ -2,7 +2,7 @@ from os.path import join
 import sys
 import time
 import numpy as np
-from numba import cuda
+import cupy as cp
 
 
 def load_data(load_dir, bid):
@@ -13,44 +13,29 @@ def load_data(load_dir, bid):
     return u, interior_mask
 
 
-@cuda.jit
-def jacobi_kernel(u, u_new, interior_mask):
-    i, j = cuda.grid(2)
+def jacobi(u0, interior_mask, max_iter, atol=1e-6, check_interval=100):
+    u = cp.asarray(u0)
+    mask = cp.asarray(interior_mask)
 
-    ny, nx = u.shape
+    for i in range(max_iter):
+        u_new = 0.25 * (u[1:-1, :-2] + u[1:-1, 2:] + u[:-2, 1:-1] + u[2:, 1:-1])
+        u_new_interior = u_new[mask]
 
-    if 1 <= i < ny - 1 and 1 <= j < nx - 1:
-        if interior_mask[i - 1, j - 1]:
-            u_new[i, j] = 0.25 * (u[i, j - 1] + u[i, j + 1] + u[i - 1, j] + u[i + 1, j])
-        else:
-            u_new[i, j] = u[i, j]
+        # Periodic check to avoid constant CPU-GPU synchronization overhead
+        if i % check_interval == 0:
+            delta = cp.abs(u[1:-1, 1:-1][mask] - u_new_interior).max()
+            if delta < atol:
+                u[1:-1, 1:-1][mask] = u_new_interior
+                break
 
+        # Normal update
+        u[1:-1, 1:-1][mask] = u_new_interior
 
-def jacobi(u0, interior_mask, max_iter, atol=None):
-    u = u0.copy()
-    u_new = u0.copy()
-
-    # Transfer to GPU
-    d_u = cuda.to_device(u)
-    d_u_new = cuda.to_device(u_new)
-    d_mask = cuda.to_device(interior_mask)
-
-    # Config GPU
-    threadsperblock = (16, 16)
-    blockspergrid_x = (u.shape[0] + 15) // 16
-    blockspergrid_y = (u.shape[1] + 15) // 16
-    blockspergrid = (blockspergrid_x, blockspergrid_y)
-
-    for _ in range(max_iter):
-        jacobi_kernel[blockspergrid, threadsperblock](d_u, d_u_new, d_mask)
-
-        # swap buffers
-        d_u, d_u_new = d_u_new, d_u
-
-    return d_u.copy_to_host()
+    return cp.asnumpy(u)
 
 
 def summary_stats(u, interior_mask):
+    # u is a numpy array again, this function is unchanged
     u_interior = u[1:-1, 1:-1][interior_mask]
     mean_temp = u_interior.mean()
     std_temp = u_interior.std()
@@ -78,18 +63,20 @@ if __name__ == "__main__":
     building_ids = building_ids[:N]
     all_u0 = np.empty((N, 514, 514))
     all_interior_mask = np.empty((N, 512, 512), dtype="bool")
+
     for i, bid in enumerate(building_ids):
         u0, interior_mask = load_data(LOAD_DIR, bid)
         all_u0[i] = u0
         all_interior_mask[i] = interior_mask
+
     MAX_ITER = 20_000
-    # ABS_TOL = 1e-4
+    ABS_TOL = 1e-4
 
     start_time = time.perf_counter()
 
     all_u = np.empty_like(all_u0)
     for i, (u0, interior_mask) in enumerate(zip(all_u0, all_interior_mask)):
-        u = jacobi(u0, interior_mask, MAX_ITER)
+        u = jacobi(u0, interior_mask, MAX_ITER, ABS_TOL)
         all_u[i] = u
 
     end_time = time.perf_counter()
@@ -102,7 +89,7 @@ if __name__ == "__main__":
 
     # Print summary statistics in CSV format
     stat_keys = ["mean_temp", "std_temp", "pct_above_18", "pct_below_15"]
-    print("building_id, " + ", ".join(stat_keys))  # CSV header
+    print("building_id, " + ", ".join(stat_keys))
     for bid, u, interior_mask in zip(building_ids, all_u, all_interior_mask):
         stats = summary_stats(u, interior_mask)
         print(f"{bid},", ", ".join(str(stats[k]) for k in stat_keys))

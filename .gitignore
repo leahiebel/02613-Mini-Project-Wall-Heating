@@ -40,6 +40,7 @@ Thumbs.db
 TODO.md
 CHANGELOG.md
 copilot-instructions.md
+*.txt
 
 # Simulation outputs and large arrays
 outputs/*
