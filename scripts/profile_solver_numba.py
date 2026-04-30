@@ -111,6 +111,8 @@ def run_profile(
 ) -> None:  # noqa: F821
     import time
 
+    print(f"[INFO] Loaded {len(building_ids)} buildings", flush=True)
+
     module = load_module(solver_module)
     if not hasattr(module, solver_function):
         raise AttributeError(f"{solver_module} has no function named '{solver_function}'")
@@ -118,17 +120,19 @@ def run_profile(
     solver = getattr(module, solver_function)
 
     # -------------------------
-    # 🔥 Warm-up (JIT compilation)
+    # 🔥 WARM-UP (JIT compile)
     # -------------------------
-    print("[INFO] Warming up JIT...", flush=True)
+    print("[INFO] Warm-up start", flush=True)
     u0, interior_mask = load_data(data_dir, building_ids[0])
     solver(u0, interior_mask, max_iter=10, atol=atol)
+    print("[INFO] Warm-up done", flush=True)
 
     # -------------------------
-    # ⏱ Timed execution
+    # ⏱ TIMED RUN
     # -------------------------
-    print("[INFO] Starting timed runs...", flush=True)
-    t_global_start = time.perf_counter()
+    print("[INFO] Timed run start", flush=True)
+
+    t_global = time.perf_counter()
 
     for i, bid in enumerate(building_ids):
         u0, interior_mask = load_data(data_dir, bid)
@@ -141,10 +145,6 @@ def run_profile(
 
     t_global_end = time.perf_counter()
 
-    total = t_global_end - t_global_start
-    print(f"[TIMING] Total: {total:.4f} s", flush=True)
-    print(f"[TIMING] Avg: {total / len(building_ids):.4f} s", flush=True)
-
-
-if __name__ == "__main__":
-    main()
+    total = t_global_end - t_global
+    print(f"[TIMING] TOTAL: {total:.4f} s", flush=True)
+    print(f"[TIMING] AVG: {total / len(building_ids):.4f} s", flush=True)
