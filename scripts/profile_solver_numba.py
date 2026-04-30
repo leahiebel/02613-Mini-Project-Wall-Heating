@@ -134,6 +134,7 @@ def run_profile(
 
     t_global = time.perf_counter()
 
+    print("DEBUG: entering loop", len(building_ids), flush=True)
     for i, bid in enumerate(building_ids):
         u0, interior_mask = load_data(data_dir, bid)
 
