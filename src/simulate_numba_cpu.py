@@ -61,7 +61,10 @@ def summary_stats(u, interior_mask):
     }
 
 
+
 if __name__ == "__main__":
+    import time
+
     # Load data
     LOAD_DIR = "/dtu/projects/02613_2025/data/modified_swiss_dwellings/"
     with open(join(LOAD_DIR, "building_ids.txt"), "r") as f:
@@ -73,23 +76,54 @@ if __name__ == "__main__":
         N = int(sys.argv[1])
 
     building_ids = building_ids[:N]
+
     all_u0 = np.empty((N, 514, 514))
     all_interior_mask = np.empty((N, 512, 512), dtype="bool")
+
     for i, bid in enumerate(building_ids):
         u0, interior_mask = load_data(LOAD_DIR, bid)
         all_u0[i] = u0
         all_interior_mask[i] = interior_mask
+
     MAX_ITER = 20_000
     ABS_TOL = 1e-4
 
+    # -------------------------
+    # Warm-up JIT
+    # -------------------------
+    print("[INFO] Warming up JIT...")
+    _ = jacobi(all_u0[0], all_interior_mask[0], 10, ABS_TOL)
+
+    # -------------------------
+    # ⏱ Timed execution
+    # -------------------------
+    print("[INFO] Starting timed runs...")
+    t_global_start = time.perf_counter()
+
     all_u = np.empty_like(all_u0)
+
     for i, (u0, interior_mask) in enumerate(zip(all_u0, all_interior_mask)):
+        t_start = time.perf_counter()
+
         u = jacobi(u0, interior_mask, MAX_ITER, ABS_TOL)
+
+        t_end = time.perf_counter()
+        print(f"[TIMING] Building {i} ({building_ids[i]}): {t_end - t_start:.4f} s")
+
         all_u[i] = u
 
-    # Print summary statistics in CSV format
+    t_global_end = time.perf_counter()
+
+    total_time = t_global_end - t_global_start
+    print(f"[TIMING] Total time: {total_time:.4f} s")
+    print(f"[TIMING] Avg per building: {total_time / N:.4f} s")
+
+    # -------------------------
+    # 📊 Summary statistics
+    # -------------------------
     stat_keys = ["mean_temp", "std_temp", "pct_above_18", "pct_below_15"]
-    print("building_id, " + ", ".join(stat_keys))  # CSV header
+    print("building_id, " + ", ".join(stat_keys))
+
     for bid, u, interior_mask in zip(building_ids, all_u, all_interior_mask):
         stats = summary_stats(u, interior_mask)
         print(f"{bid},", ", ".join(str(stats[k]) for k in stat_keys))
