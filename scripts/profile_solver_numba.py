@@ -149,3 +149,19 @@ def run_profile(
     total = t_global_end - t_global
     print(f"[TIMING] TOTAL: {total:.4f} s", flush=True)
     print(f"[TIMING] AVG: {total / len(building_ids):.4f} s", flush=True)
+
+def main() -> None:
+    args = parse_args()
+    building_ids = read_building_ids(args.ids_file)
+    run_profile(
+        data_dir=args.data_dir,
+        building_ids=building_ids,
+        solver_module=args.solver_module,
+        solver_function=args.solver_function,
+        max_iter=args.max_iter,
+        atol=args.atol,
+    )
+
+
+if __name__ == "__main__":
+    main()
