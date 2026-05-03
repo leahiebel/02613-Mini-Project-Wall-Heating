@@ -10,6 +10,7 @@
 #BSUB -o job_outputs/nsys_cupy_%J.out
 #BSUB -e job_outputs/nsys_cupy_%J.err
 
+
 source /dtu/projects/02613_2025/conda/conda_init.sh
 conda activate 02613_2026
 

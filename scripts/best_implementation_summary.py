@@ -11,6 +11,7 @@ plt.title("Distribution of Mean Temperatures")
 plt.xlabel("Mean Temperature (°C)")
 plt.ylabel("Count")
 plt.show()
+plt.savefig("outputs/mean_temp_distribution.png")
 
 # 2. Average mean temperature
 print("Avg Mean Temp:", df['mean_temp'].mean())
