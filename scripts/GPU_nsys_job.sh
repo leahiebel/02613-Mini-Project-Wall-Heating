@@ -6,9 +6,10 @@
 #BSUB -R "span[hosts=1]"
 #BSUB -R "rusage[mem=12GB]"
 #BSUB -gpu "num=1:mode=exclusive_process"
-#BSUB -R "select[gpu80gb]"
+#BSUB -R "rusage[mem=32GB]"
 #BSUB -o job_outputs/nsys_cupy_%J.out
 #BSUB -e job_outputs/nsys_cupy_%J.err
+
 
 source /dtu/projects/02613_2025/conda/conda_init.sh
 conda activate 02613_2026
