@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load the results
-df = pd.read_csv("outputs/gpu_results_simulate_GPU_best_implementation_full_dataset.csv")
+df = pd.read_csv("outputs/simulate_GPU_best_implementation_full_dataset.csv")
 df.columns = df.columns.str.strip() 
 
 # 1. Distribution of mean temperatures (Histogram)
